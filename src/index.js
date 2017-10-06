@@ -22,6 +22,7 @@ const matches = (key, importee) => {
 };
 const endsWith = (needle, haystack) => haystack.slice(-needle.length) === needle;
 const isFilePath = id => /^\.?\//.test(id);
+const isRootPath = id => /^\//.test(id);
 const exists = uri => {
   try {
     return fs.statSync(uri).isFile();
@@ -71,7 +72,11 @@ export default function alias(options = {}) {
         const directory = path.dirname(importerId);
 
         // Resolve file names
-        const filePath = path.resolve(directory, updatedId);
+        let osSpecificPath = path.join.apply(path, updatedId.split('/'));
+        if (isRootPath(updatedId)) {
+          osSpecificPath = path.sep + osSpecificPath;
+        }
+        const filePath = path.resolve(directory, osSpecificPath);
         const match = resolve.map(ext => `${filePath}${ext}`)
                             .find(exists);
 
